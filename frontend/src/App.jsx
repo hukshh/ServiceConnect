@@ -3,6 +3,7 @@ import { useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
+import ProviderProfile from './pages/ProviderProfile';
 
 // Protects routes by checking if user is authenticated and has the correct role
 const PrivateRoute = ({ children, roles }) => {
@@ -167,8 +168,11 @@ const App = () => {
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
-        {/* Customer routes */}
-        <Route path="/" element={<PrivateRoute roles={['customer']}><Home /></PrivateRoute>} />
+        {/* Public provider profile — accessible without login */}
+        <Route path="/provider/:userId" element={<ProviderProfile />} />
+
+        {/* Customer home — accessible to all authenticated users */}
+        <Route path="/" element={<PrivateRoute roles={['customer', 'provider', 'admin']}><Home /></PrivateRoute>} />
 
         {/* Provider routes */}
         <Route path="/provider/dashboard" element={<PrivateRoute roles={['provider']}><ProviderDashboard /></PrivateRoute>} />

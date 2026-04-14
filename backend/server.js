@@ -21,6 +21,11 @@ app.use(cors());
 // Mount authentication routes at /api/auth
 app.use('/api/auth', require('./routes/authRoutes'));
 
+// Mount category, service, and provider routes
+app.use('/api/categories', require('./routes/categoryRoutes'));
+app.use('/api/services', require('./routes/serviceRoutes'));
+app.use('/api/providers', require('./routes/providerRoutes'));
+
 // Health check endpoint to verify API is running
 app.get('/', (req, res) => {
   res.json({ message: 'ServiceConnect API is running' });

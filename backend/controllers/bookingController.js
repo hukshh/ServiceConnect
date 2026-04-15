@@ -1,6 +1,7 @@
 const Booking = require('../models/Booking');
 const Service = require('../models/Service');
 const ProviderProfile = require('../models/ProviderProfile');
+const PromoCode = require('../models/PromoCode');
 const sendNotification = require('../utils/sendNotification');
 
 // Strict finite state machine for booking status transitions
@@ -18,7 +19,7 @@ const allowedTransitions = {
 // @access  Customer
 const createBooking = async (req, res) => {
   try {
-    const { serviceId, date, timeSlot, address, notes } = req.body;
+  const { serviceId, date, timeSlot, address, notes, promoCode } = req.body;
 
     // Find the requested service
     const service = await Service.findById(serviceId);
@@ -37,6 +38,15 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ message: 'This provider is not yet verified' });
     }
 
+    // Check if the booking date falls on a blocked date for the provider
+    const targetDate = new Date(date).setHours(0, 0, 0, 0);
+    const isBlocked = providerProfile.blockedDates.some(blockedDate => {
+       return new Date(blockedDate).setHours(0, 0, 0, 0) === targetDate;
+    });
+    if (isBlocked) {
+      return res.status(400).json({ message: 'Provider has blocked this date and is not available' });
+    }
+
     // Check for conflicting bookings for this provider at the same date and time Slot
     const conflict = await Booking.findOne({
       provider: service.provider,
@@ -49,6 +59,27 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ message: 'Provider is not available at this time slot' });
     }
 
+    let discountAmount = 0;
+    
+    // Validate Promo Code
+    if (promoCode) {
+       const promo = await PromoCode.findOne({ code: promoCode.toUpperCase(), isActive: true });
+       if (!promo || promo.usedCount >= promo.maxUses || new Date() > new Date(promo.expiresAt) || service.price < promo.minOrderValue) {
+          return res.status(400).json({ message: 'Invalid, expired, or inapplicable promo code' });
+       }
+       
+       if (promo.discountType === 'percentage') {
+          discountAmount = (promo.discountValue / 100) * service.price;
+       } else {
+          discountAmount = promo.discountValue;
+       }
+       discountAmount = Math.min(discountAmount, service.price); // cannot discount more than price
+       
+       // Increment promo usage
+       promo.usedCount += 1;
+       await promo.save();
+    }
+
     // Create booking
     const booking = await Booking.create({
       customer: req.user._id,
@@ -58,7 +89,9 @@ const createBooking = async (req, res) => {
       timeSlot,
       address,
       notes,
-      totalAmount: service.price, // Lock in price at booking time
+      promoCode: promoCode ? promoCode.toUpperCase() : '',
+      discountAmount,
+      totalAmount: Math.max(0, service.price - discountAmount),
     });
 
     const populatedBooking = await booking.populate([

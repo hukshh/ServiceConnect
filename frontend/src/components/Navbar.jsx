@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import NotificationBell from './NotificationBell';
 
 // Top navigation bar with logo, role-based links, and auth buttons
 const Navbar = () => {
@@ -66,6 +67,9 @@ const Navbar = () => {
                     Admin
                   </Link>
                 )}
+
+                {/* Notification Bell */}
+                <NotificationBell />
 
                 {/* User avatar + name */}
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">

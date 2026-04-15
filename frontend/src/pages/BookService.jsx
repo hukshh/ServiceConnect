@@ -19,6 +19,12 @@ const BookService = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Promo State
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState(null); // { code, discountAmount, originalValue, finalValue }
+  const [promoError, setPromoError] = useState('');
+  const [applyingPromo, setApplyingPromo] = useState(false);
+
   // Form State
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [date, setDate] = useState('');
@@ -65,6 +71,7 @@ const BookService = () => {
         timeSlot,
         address: { street, city, pincode },
         notes,
+        promoCode: appliedPromo?.code || '',
       });
 
       setSuccess('Booking confirmed successfully!');
@@ -73,6 +80,38 @@ const BookService = () => {
       setError(err.response?.data?.message || 'Failed to create booking.');
     }
   };
+
+  const handleApplyPromo = async () => {
+     if (!promoCodeInput) return;
+     if (!selectedServiceId) {
+        setPromoError('Please select a service first.');
+        return;
+     }
+
+     setApplyingPromo(true);
+     setPromoError('');
+     try {
+        const { data } = await API.post('/promo/apply', {
+           code: promoCodeInput,
+           orderValue: selectedService?.price
+        });
+        setAppliedPromo(data);
+        setPromoError('');
+     } catch (err) {
+        setPromoError(err.response?.data?.message || 'Invalid promo code');
+        setAppliedPromo(null);
+     } finally {
+        setApplyingPromo(false);
+     }
+  };
+
+  // Re-verify promo if selected service changes
+  useEffect(() => {
+     if (appliedPromo && selectedService) {
+        setAppliedPromo(null);
+        setPromoCodeInput('');
+     }
+  }, [selectedServiceId]);
 
   // Get minimum date (today) in YYYY-MM-DD for date picker
   const today = new Date().toISOString().split('T')[0];
@@ -204,15 +243,77 @@ const BookService = () => {
               </div>
             </div>
 
+            {/* Step 4: Promo Code */}
+            <div>
+              <label className="block text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs">4</span>
+                Promo Code
+              </label>
+              <div className="flex gap-3 items-start">
+                 <div className="flex-1">
+                    <input 
+                      type="text" 
+                      placeholder="Got a discount code?" 
+                      value={promoCodeInput} 
+                      onChange={e => setPromoCodeInput(e.target.value.toUpperCase())} 
+                      className={`${inputClass} mt-0 uppercase`} 
+                      disabled={!!appliedPromo}
+                    />
+                    {promoError && <p className="text-red-400 text-xs mt-2">{promoError}</p>}
+                    {appliedPromo && <p className="text-emerald-400 text-xs mt-2 font-medium">✅ Promo applied: -₹{appliedPromo.discountAmount}</p>}
+                 </div>
+                 {!appliedPromo ? (
+                    <button 
+                      type="button" 
+                      onClick={handleApplyPromo}
+                      disabled={!promoCodeInput || applyingPromo}
+                      className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl disabled:opacity-50 transition-colors"
+                    >
+                      {applyingPromo ? '...' : 'Apply'}
+                    </button>
+                 ) : (
+                    <button 
+                      type="button" 
+                      onClick={() => { setAppliedPromo(null); setPromoCodeInput(''); }}
+                      className="px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-medium rounded-xl transition-colors"
+                    >
+                      Remove
+                    </button>
+                 )}
+              </div>
+            </div>
+
             {/* Summary Box */}
-            <div className="p-5 bg-black/20 border border-white/5 rounded-xl flex items-center justify-between">
-              <div>
-                <p className="text-slate-400 text-sm">Total Amount Due</p>
-                <p className="text-xs text-slate-500 mt-0.5">Pay after service completion</p>
-              </div>
-              <div className="text-2xl font-bold text-white">
-                ₹{selectedService?.price || 0}
-              </div>
+            <div className="p-5 bg-black/20 border border-white/5 rounded-xl">
+               <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-3">
+                  <div>
+                    <p className="text-slate-400 text-sm">Service Fee</p>
+                  </div>
+                  <div className="text-lg font-medium text-white">
+                    ₹{selectedService?.price || 0}
+                  </div>
+               </div>
+               
+               {appliedPromo && (
+                  <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-3">
+                    <div>
+                      <p className="text-emerald-400 text-sm font-medium">Discount ({appliedPromo.code})</p>
+                    </div>
+                    <div className="text-lg font-medium text-emerald-400">
+                      -₹{appliedPromo.discountAmount}
+                    </div>
+                  </div>
+               )}
+
+               <div className="flex items-center justify-between pt-1">
+                  <div>
+                     <p className="text-slate-300 font-bold">Total Amount Due</p>
+                     <p className="text-xs text-slate-500 mt-0.5">Pay after service completion</p>
+                  </div>
+                  <div className="text-3xl font-black text-brand-400">
+                     ₹{appliedPromo ? appliedPromo.finalValue : (selectedService?.price || 0)}
+                  </div>
+               </div>
             </div>
 
             {/* Submit */}

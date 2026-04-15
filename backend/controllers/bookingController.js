@@ -1,6 +1,7 @@
 const Booking = require('../models/Booking');
 const Service = require('../models/Service');
 const ProviderProfile = require('../models/ProviderProfile');
+const sendNotification = require('../utils/sendNotification');
 
 // Strict finite state machine for booking status transitions
 const allowedTransitions = {
@@ -64,6 +65,14 @@ const createBooking = async (req, res) => {
       { path: 'service', select: 'title category priceType' },
       { path: 'provider', select: 'name profilePhoto email phone' },
     ]);
+
+    // Send Real-Time Notification to Provider
+    const { io, connectedUsers } = require('../server');
+    sendNotification(io, connectedUsers, service.provider, {
+      type: 'new_booking',
+      message: `You have a new booking request from ${req.user.name}`,
+      bookingId: booking._id
+    });
 
     res.status(201).json(populatedBooking);
   } catch (error) {
@@ -146,6 +155,14 @@ const cancelBooking = async (req, res) => {
        .populate('service', 'title')
        .populate('provider', 'name profilePhoto phone');
 
+    // Notify Provider that Customer Cancelled
+    const { io, connectedUsers } = require('../server');
+    sendNotification(io, connectedUsers, booking.provider, {
+      type: 'cancelled',
+      message: `Customer ${req.user.name} cancelled the booking for ${updated.service.title}.`,
+      bookingId: booking._id
+    });
+
     res.status(200).json(updated);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -218,6 +235,24 @@ const updateBookingStatus = async (req, res) => {
     const updated = await Booking.findById(req.params.id)
        .populate('service', 'title')
        .populate('customer', 'name profilePhoto phone email');
+
+    // Send notifications based on status change
+    const { io, connectedUsers } = require('../server');
+    let message = '';
+    
+    if (status === 'accepted') message = 'Your booking has been accepted.';
+    else if (status === 'rejected') message = 'Your booking request was rejected.';
+    else if (status === 'in_progress') message = 'Your service has started.';
+    else if (status === 'completed') message = 'Your service is complete. Please leave a review.';
+    else if (status === 'cancelled') message = 'Your booking was cancelled by the provider.';
+    
+    if (message) {
+      sendNotification(io, connectedUsers, booking.customer, {
+        type: status,
+        message,
+        bookingId: booking._id
+      });
+    }
 
     res.status(200).json(updated);
   } catch (error) {

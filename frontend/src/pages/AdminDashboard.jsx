@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import API from '../utils/axios';
 import Navbar from '../components/Navbar';
 
-const TABS = ['Overview', 'Users', 'Providers', 'Bookings'];
+const TABS = ['Overview', 'Users', 'Providers', 'Bookings', 'Promos'];
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('Overview');
@@ -13,6 +13,13 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [providers, setProviders] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [promos, setPromos] = useState([]);
+
+  // Promo Form State
+  const [promoForm, setPromoForm] = useState({
+     code: '', discountType: 'percentage', discountValue: '', minOrderValue: 0, maxUses: 100, expiresAt: ''
+  });
+  const [promoCreating, setPromoCreating] = useState(false);
 
   useEffect(() => {
     fetchTabData(activeTab);
@@ -33,6 +40,9 @@ const AdminDashboard = () => {
       } else if (tab === 'Bookings') {
         const { data } = await API.get('/bookings/all');
         setBookings(data);
+      } else if (tab === 'Promos') {
+        const { data } = await API.get('/promo');
+        setPromos(data);
       }
     } catch (error) {
       alert(error.response?.data?.message || 'Failed to fetch data');
@@ -68,6 +78,21 @@ const AdminDashboard = () => {
       setProviders(providers.map(p => p._id === profileId ? { ...p, isVerified: true } : p));
     } catch (error) {
       alert(error.response?.data?.message || 'Verification failed');
+    }
+  };
+
+  const handleCreatePromo = async (e) => {
+    e.preventDefault();
+    setPromoCreating(true);
+    try {
+      const { data } = await API.post('/promo', promoForm);
+      setPromos([data, ...promos]);
+      setPromoForm({ code: '', discountType: 'percentage', discountValue: '', minOrderValue: 0, maxUses: 100, expiresAt: '' });
+      alert('Promo code created successfully!');
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to create promo code');
+    } finally {
+      setPromoCreating(false);
     }
   };
 
@@ -242,40 +267,127 @@ const AdminDashboard = () => {
                </div>
              )}
 
-             {/* BOOKINGS TAB */}
-             {activeTab === 'Bookings' && (
-               <div className="bg-black/20 border border-white/10 rounded-2xl overflow-hidden">
-                 <div className="overflow-x-auto">
-                   <table className="w-full text-left text-sm whitespace-nowrap">
-                     <thead className="bg-white/5 text-slate-400">
-                       <tr>
-                         <th className="px-6 py-4 font-semibold">Service</th>
-                         <th className="px-6 py-4 font-semibold">Customer</th>
-                         <th className="px-6 py-4 font-semibold">Provider</th>
-                         <th className="px-6 py-4 font-semibold">Status</th>
-                         <th className="px-6 py-4 font-semibold text-right">Amount</th>
-                       </tr>
-                     </thead>
-                     <tbody className="divide-y divide-white/5 text-slate-300">
-                       {bookings.map(booking => (
-                         <tr key={booking._id} className="hover:bg-white/[0.02]">
-                           <td className="px-6 py-4 font-medium text-white">{booking.service?.title}</td>
-                           <td className="px-6 py-4">{booking.customer?.name}</td>
-                           <td className="px-6 py-4">{booking.provider?.name}</td>
-                           <td className="px-6 py-4 capitalize text-xs font-semibold border-transparent">
-                             <span className="px-2 py-1 rounded-full border border-white/10 bg-white/5">
-                               {booking.status.replace('_', ' ')}
-                             </span>
-                           </td>
-                           <td className="px-6 py-4 text-right font-medium text-white">₹{booking.totalAmount}</td>
-                         </tr>
-                       ))}
-                     </tbody>
-                   </table>
+              {/* BOOKINGS TAB */}
+              {activeTab === 'Bookings' && (
+                <div className="bg-black/20 border border-white/10 rounded-2xl overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm whitespace-nowrap">
+                      <thead className="bg-white/5 text-slate-400">
+                        <tr>
+                          <th className="px-6 py-4 font-semibold">Service</th>
+                          <th className="px-6 py-4 font-semibold">Customer</th>
+                          <th className="px-6 py-4 font-semibold">Provider</th>
+                          <th className="px-6 py-4 font-semibold">Status</th>
+                          <th className="px-6 py-4 font-semibold text-right">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 text-slate-300">
+                        {bookings.map(booking => (
+                          <tr key={booking._id} className="hover:bg-white/[0.02]">
+                            <td className="px-6 py-4 font-medium text-white">{booking.service?.title}</td>
+                            <td className="px-6 py-4">{booking.customer?.name}</td>
+                            <td className="px-6 py-4">{booking.provider?.name}</td>
+                            <td className="px-6 py-4 capitalize text-xs font-semibold border-transparent">
+                              <span className="px-2 py-1 rounded-full border border-white/10 bg-white/5">
+                                {booking.status.replace('_', ' ')}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-right font-medium text-white">₹{booking.totalAmount}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* PROMOS TAB */}
+              {activeTab === 'Promos' && (
+                 <div className="space-y-8">
+                    {/* Create Promo Form */}
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                       <h2 className="text-xl font-bold text-white mb-4">Create New Promo Code</h2>
+                       <form onSubmit={handleCreatePromo} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div>
+                             <label className="text-xs font-semibold text-slate-400">Promo Code</label>
+                             <input type="text" value={promoForm.code} onChange={(e) => setPromoForm({...promoForm, code: e.target.value.toUpperCase()})} placeholder="e.g. SUMMER50" className="w-full mt-1 bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-brand-500 uppercase" required />
+                          </div>
+                          <div>
+                             <label className="text-xs font-semibold text-slate-400">Discount Type</label>
+                             <select value={promoForm.discountType} onChange={(e) => setPromoForm({...promoForm, discountType: e.target.value})} className="w-full mt-1 bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-brand-500">
+                                <option value="percentage">Percentage (%)</option>
+                                <option value="flat">Flat Amount (₹)</option>
+                             </select>
+                          </div>
+                          <div>
+                             <label className="text-xs font-semibold text-slate-400">Discount Value</label>
+                             <input type="number" min="1" value={promoForm.discountValue} onChange={(e) => setPromoForm({...promoForm, discountValue: e.target.value})} className="w-full mt-1 bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-brand-500" required />
+                          </div>
+                          <div>
+                             <label className="text-xs font-semibold text-slate-400">Min Order Value (₹)</label>
+                             <input type="number" min="0" value={promoForm.minOrderValue} onChange={(e) => setPromoForm({...promoForm, minOrderValue: e.target.value})} className="w-full mt-1 bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-brand-500" required />
+                          </div>
+                          <div>
+                             <label className="text-xs font-semibold text-slate-400">Max Uses</label>
+                             <input type="number" min="1" value={promoForm.maxUses} onChange={(e) => setPromoForm({...promoForm, maxUses: e.target.value})} className="w-full mt-1 bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-brand-500" required />
+                          </div>
+                          <div>
+                             <label className="text-xs font-semibold text-slate-400">Expires At</label>
+                             <input type="date" value={promoForm.expiresAt} onChange={(e) => setPromoForm({...promoForm, expiresAt: e.target.value})} min={new Date().toISOString().split('T')[0]} className="w-full mt-1 bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-brand-500" required />
+                          </div>
+                          <div className="md:col-span-2 lg:col-span-3 flex justify-end mt-2">
+                             <button type="submit" disabled={promoCreating} className="px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl transition-all shadow-lg disabled:opacity-50">
+                                {promoCreating ? 'Creating...' : 'Create Promo Code'}
+                             </button>
+                          </div>
+                       </form>
+                    </div>
+
+                    {/* Promos Table */}
+                    <div className="bg-black/20 border border-white/10 rounded-2xl overflow-hidden">
+                       <div className="overflow-x-auto">
+                          <table className="w-full text-left text-sm whitespace-nowrap">
+                             <thead className="bg-white/5 text-slate-400">
+                                <tr>
+                                   <th className="px-6 py-4 font-semibold">Code</th>
+                                   <th className="px-6 py-4 font-semibold">Discount</th>
+                                   <th className="px-6 py-4 font-semibold">Uses</th>
+                                   <th className="px-6 py-4 font-semibold">Min Order</th>
+                                   <th className="px-6 py-4 font-semibold text-right">Status</th>
+                                </tr>
+                             </thead>
+                             <tbody className="divide-y divide-white/5 text-slate-300">
+                                {promos.map(promo => {
+                                   const isExpired = new Date() > new Date(promo.expiresAt);
+                                   return (
+                                      <tr key={promo._id} className="hover:bg-white/[0.02]">
+                                         <td className="px-6 py-4 font-bold text-white tracking-wider">{promo.code}</td>
+                                         <td className="px-6 py-4 font-medium text-brand-400">
+                                            {promo.discountType === 'percentage' ? `${promo.discountValue}% Off` : `₹${promo.discountValue} Off`}
+                                         </td>
+                                         <td className="px-6 py-4">
+                                            {promo.usedCount} <span className="text-slate-500">/ {promo.maxUses}</span>
+                                         </td>
+                                         <td className="px-6 py-4">₹{promo.minOrderValue}</td>
+                                         <td className="px-6 py-4 text-right">
+                                            {isExpired ? (
+                                               <span className="text-red-400 text-xs font-bold bg-red-400/10 px-2 py-1 rounded-lg">Expired</span>
+                                            ) : !promo.isActive ? (
+                                               <span className="text-slate-400 text-xs font-bold bg-slate-400/10 px-2 py-1 rounded-lg">Inactive</span>
+                                            ) : (
+                                               <span className="text-emerald-400 text-xs font-bold bg-emerald-400/10 px-2 py-1 rounded-lg">Active</span>
+                                            )}
+                                         </td>
+                                      </tr>
+                                   )
+                                })}
+                             </tbody>
+                          </table>
+                       </div>
+                    </div>
                  </div>
-               </div>
-             )}
-             
+              )}
+              
            </div>
         )}
       </div>

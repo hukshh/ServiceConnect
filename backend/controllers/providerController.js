@@ -85,9 +85,54 @@ const getAllProviders = async (req, res) => {
   }
 };
 
+// @desc    Update provider availability
+// @route   PUT /api/providers/availability
+// @access  Provider
+const updateAvailability = async (req, res) => {
+  try {
+    const { availability } = req.body;
+    const profile = await ProviderProfile.findOneAndUpdate(
+      { user: req.user._id },
+      { availability },
+      { new: true, runValidators: true }
+    );
+    if (!profile) return res.status(404).json({ message: 'Profile not found' });
+    res.status(200).json(profile.availability);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Block a specific date
+// @route   PUT /api/providers/block-date
+// @access  Provider
+const blockDate = async (req, res) => {
+  try {
+    const { date, remove } = req.body;
+    let updateObj = {};
+    if (remove) {
+      updateObj = { $pull: { blockedDates: new Date(date) } };
+    } else {
+      updateObj = { $addToSet: { blockedDates: new Date(date) } };
+    }
+    
+    const profile = await ProviderProfile.findOneAndUpdate(
+      { user: req.user._id },
+      updateObj,
+      { new: true }
+    );
+    if (!profile) return res.status(404).json({ message: 'Profile not found' });
+    res.status(200).json(profile.blockedDates);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 module.exports = {
   getProviderProfile,
   createOrUpdateProfile,
   getMyProfile,
   getAllProviders,
+  updateAvailability,
+  blockDate,
 };

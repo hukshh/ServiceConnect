@@ -26,6 +26,8 @@ app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/services', require('./routes/serviceRoutes'));
 app.use('/api/providers', require('./routes/providerRoutes'));
 app.use('/api/bookings', require('./routes/bookingRoutes'));
+app.use('/api/reviews', require('./routes/reviewRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
 
 // Health check endpoint to verify API is running
 app.get('/', (req, res) => {

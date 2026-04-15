@@ -10,7 +10,11 @@ dotenv.config();
 console.log('Attempting to connect to MongoDB...');
 connectDB();
 
+const { createServer } = require('http');
+const { Server } = require('socket.io');
+
 const app = express();
+const httpServer = createServer(app);
 
 // Parse incoming JSON request bodies
 app.use(express.json());
@@ -18,10 +22,44 @@ app.use(express.json());
 // Enable CORS for all origins (frontend dev server)
 app.use(cors());
 
+// Configure Socket.io
+const io = new Server(httpServer, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+  }
+});
+
+// Map to track active user socket connections (userId -> socketId)
+const connectedUsers = new Map();
+
+io.on('connection', (socket) => {
+  console.log(`Socket connected: ${socket.id}`);
+
+  // Listen for user registering their ID
+  socket.on('register', (userId) => {
+    connectedUsers.set(userId, socket.id);
+    console.log(`User ${userId} registered with socket ${socket.id}`);
+  });
+
+  socket.on('disconnect', () => {
+    for (let [userId, socketId] of connectedUsers.entries()) {
+      if (socketId === socket.id) {
+        connectedUsers.delete(userId);
+        console.log(`User ${userId} disconnected`);
+        break;
+      }
+    }
+  });
+});
+
+// Make io & connectedUsers accessible to other files via exports
+module.exports = { app, io, connectedUsers };
+
 // Mount authentication routes at /api/auth
 app.use('/api/auth', require('./routes/authRoutes'));
 
-// Mount category, service, and provider routes
+// Mount category, service, provider, booking, review, admin routes
 app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/services', require('./routes/serviceRoutes'));
 app.use('/api/providers', require('./routes/providerRoutes'));
@@ -36,6 +74,10 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
+// NOTE: Don't start server immediately if this file is imported by a test file.
+if (require.main === module) {
+  httpServer.listen(PORT, () => {
+    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  });
+}
+

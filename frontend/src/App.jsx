@@ -10,6 +10,7 @@ import BookingHistory from './pages/BookingHistory';
 import ProviderDashboard from './pages/ProviderDashboard';
 import WriteReview from './pages/WriteReview';
 import AdminDashboard from './pages/AdminDashboard';
+import ProviderAvailability from './pages/ProviderAvailability';
 
 // Protects routes by checking if user is authenticated and has the correct role
 const PrivateRoute = ({ children, roles }) => {
@@ -84,6 +85,7 @@ const App = () => {
 
         {/* Provider routes */}
         <Route path="/provider/dashboard" element={<PrivateRoute roles={['provider']}><ProviderDashboard /></PrivateRoute>} />
+        <Route path="/provider/availability" element={<PrivateRoute roles={['provider']}><ProviderAvailability /></PrivateRoute>} />
 
         {/* Admin routes */}
         <Route path="/admin/dashboard" element={<PrivateRoute roles={['admin']}><AdminDashboard /></PrivateRoute>} />

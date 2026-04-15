@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import API from '../utils/axios';
+import StarRating from '../components/StarRating';
 
 // Renders a star rating row for the provider's profile
 const StarRow = ({ rating }) => (
@@ -25,24 +26,29 @@ const ProviderProfile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fetches the provider's profile and services on mount
+  // Fetches the provider's profile, services, and reviews on mount
   useEffect(() => {
-    const fetchProvider = async () => {
+    const fetchProviderData = async () => {
       try {
-        const { data } = await API.get(`/providers/${userId}`);
-        setProfile(data.profile);
-        setServices(data.services);
+        const [profileRes, reviewsRes] = await Promise.all([
+           API.get(`/providers/${userId}`),
+           API.get(`/reviews/provider/${userId}`)
+        ]);
+        setProfile(profileRes.data.profile);
+        setServices(profileRes.data.services);
+        setReviews(reviewsRes.data);
       } catch (err) {
         setError(err.response?.data?.message || 'Provider not found');
       } finally {
         setLoading(false);
       }
     };
-    fetchProvider();
+    fetchProviderData();
   }, [userId]);
 
   if (loading) {
@@ -213,6 +219,50 @@ const ProviderProfile = () => {
                     <span className="text-lg font-bold text-white">₹{service.price}</span>
                     <span className="text-xs text-slate-500 ml-1">/{service.priceType === 'hourly' ? 'hr' : 'fixed'}</span>
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Reviews Section */}
+        <div className="pt-8 border-t border-white/10">
+          <h2 className="text-base font-semibold text-white mb-6 flex items-center gap-2">
+            <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+            Reviews ({numReviews})
+          </h2>
+
+          {reviews.length === 0 ? (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-10 text-center">
+              <span className="text-4xl mb-3 block">💬</span>
+              <p className="text-slate-400">No reviews yet for this provider.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {reviews.map((review) => (
+                <div key={review._id} className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/[0.08] transition-all">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                        {review.customer?.profilePhoto ? (
+                           <img src={review.customer.profilePhoto} className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                           review.customer?.name?.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-white">{review.customer?.name}</p>
+                        <p className="text-xs text-slate-500">{new Date(review.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <StarRating value={review.rating} size="w-3.5 h-3.5" />
+                  </div>
+                  <p className="text-sm text-slate-300 leading-relaxed">"{review.comment}"</p>
+                  <p className="text-xs font-medium text-brand-400 mt-3 pt-3 border-t border-white/5">
+                    Service: {review.service?.title}
+                  </p>
                 </div>
               ))}
             </div>

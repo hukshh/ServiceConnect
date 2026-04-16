@@ -23,7 +23,6 @@ const BookService = () => {
   const [promoCodeInput, setPromoCodeInput] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null); // { code, discountAmount, originalValue, finalValue }
   const [promoError, setPromoError] = useState('');
-  const [applyingPromo, setApplyingPromo] = useState(false);
 
   // Form State
   const [selectedServiceId, setSelectedServiceId] = useState('');
@@ -33,11 +32,13 @@ const BookService = () => {
   const [city, setCity] = useState('');
   const [pincode, setPincode] = useState('');
   const [notes, setNotes] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [applyingPromo, setApplyingPromo] = useState(false);
 
-  // Auto-calculated selected service object
   const selectedService = services.find((s) => s._id === selectedServiceId);
 
   useEffect(() => {
+    document.title = 'ServiceConnect - Book Service';
     const fetchData = async () => {
       try {
         const { data } = await API.get(`/providers/${providerId}`);
@@ -64,6 +65,8 @@ const BookService = () => {
       return;
     }
 
+    setSubmitting(true);
+
     try {
       await API.post('/bookings', {
         serviceId: selectedServiceId,
@@ -78,6 +81,7 @@ const BookService = () => {
       setTimeout(() => navigate('/bookings'), 2000);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create booking.');
+      setSubmitting(false);
     }
   };
 
@@ -140,8 +144,13 @@ const BookService = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pb-20">
       <Navbar />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 animate-fade-in">
-        <div className="text-center mb-10">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 animate-fade-in relative">
+        <button onClick={() => navigate(-1)} className="absolute -top-4 left-4 sm:left-6 flex items-center gap-1 text-slate-400 hover:text-white transition-colors text-sm font-medium">
+           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+           Back
+        </button>
+
+        <div className="text-center mb-10 mt-6">
           <h1 className="text-3xl font-extrabold text-white mb-2">Book Service</h1>
           <p className="text-slate-400">
             Booking an appointment with <span className="font-semibold text-white">{provider?.name}</span>
@@ -319,10 +328,15 @@ const BookService = () => {
             {/* Submit */}
             <button
               type="submit"
-              disabled={!!success || services.length === 0}
-              className="w-full py-4 bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-brand-500/25 transition-all duration-200"
+              disabled={!!success || services.length === 0 || submitting}
+              className="w-full py-4 bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-brand-500/25 transition-all duration-200 flex justify-center items-center gap-2"
             >
-              Confirm Booking
+              {submitting ? (
+                 <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Confirming...
+                 </>
+              ) : 'Confirm Booking'}
             </button>
 
           </form>

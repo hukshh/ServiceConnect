@@ -135,13 +135,80 @@ const getDashboardStats = async (req, res) => {
       { $group: { _id: '$status', count: { $sum: 1 } } }
     ]);
 
+    // Top 5 providers by earnings
+    const topProviders = await ProviderProfile.find()
+       .sort({ totalEarnings: -1, rating: -1 })
+       .limit(5)
+       .populate('user', 'name email profilePhoto');
+
+    // Most booked category
+    const categoryStats = await Booking.aggregate([
+       { $lookup: { from: 'services', localField: 'service', foreignField: '_id', as: 'serviceDetails' } },
+       { $unwind: '$serviceDetails' },
+       { $group: { _id: '$serviceDetails.category', count: { $sum: 1 } } },
+       { $sort: { count: -1 } },
+       { $limit: 1 },
+       { $lookup: { from: 'categories', localField: '_id', foreignField: '_id', as: 'categoryDetails' } },
+       { $unwind: '$categoryDetails' }
+    ]);
+    const mostBookedCategory = categoryStats.length > 0 ? categoryStats[0] : null;
+
     res.status(200).json({
       totalUsers,
       totalProviders,
       totalBookings,
       totalRevenue,
       bookingsByStatus,
+      topProviders,
+      mostBookedCategory,
     });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Get monthly revenue & bookings trend for last 6 months
+// @route   GET /api/admin/monthly-stats
+// @access  Admin
+const getMonthlyStats = async (req, res) => {
+  try {
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1); // Start of that month
+
+    const stats = await Booking.aggregate([
+      { 
+         $match: { 
+            createdAt: { $gte: sixMonthsAgo } 
+         } 
+      },
+      {
+         $group: {
+            _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+            revenue: { 
+               $sum: { 
+                  $cond: [ { $eq: ["$status", "completed"] }, "$totalAmount", 0 ] 
+               } 
+            },
+            bookings: { $sum: 1 }
+         }
+      },
+      { $sort: { _id: 1 } } // Sort chronologically
+    ]);
+
+    // Format array output { month, revenue, bookings }
+    const formattedStats = stats.map(item => {
+       const [year, monthNum] = item._id.split('-');
+       const date = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
+       const monthName = date.toLocaleString('default', { month: 'short' });
+       return {
+          month: monthName,
+          revenue: item.revenue,
+          bookings: item.bookings
+       };
+    });
+
+    res.status(200).json(formattedStats);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -154,4 +221,5 @@ module.exports = {
   blockUser,
   deleteUser,
   getDashboardStats,
+  getMonthlyStats,
 };

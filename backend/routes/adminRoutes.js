@@ -7,6 +7,7 @@ const {
   blockUser,
   deleteUser,
   getDashboardStats,
+  getMonthlyStats,
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -16,6 +17,7 @@ router.use(authorize('admin'));
 
 // Overview Stats
 router.get('/stats', getDashboardStats);
+router.get('/monthly-stats', getMonthlyStats);
 
 // User Management
 router.get('/users', getAllUsers);

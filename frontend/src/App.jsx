@@ -11,21 +11,17 @@ import ProviderDashboard from './pages/ProviderDashboard';
 import WriteReview from './pages/WriteReview';
 import AdminDashboard from './pages/AdminDashboard';
 import ProviderAvailability from './pages/ProviderAvailability';
+import ProviderEarnings from './pages/ProviderEarnings';
+import NotFound from './pages/NotFound';
+import Spinner from './components/Spinner';
+import Footer from './components/Footer';
 
 // Protects routes by checking if user is authenticated and has the correct role
 const PrivateRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
 
-
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-brand-950 to-slate-900 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
-          <p className="text-slate-400 text-sm font-medium">Loading...</p>
-        </div>
-      </div>
-    );
+    return <Spinner global />;
   }
 
   if (!user) {
@@ -46,14 +42,7 @@ const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-brand-950 to-slate-900 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
-          <p className="text-slate-400 text-sm font-medium">Loading...</p>
-        </div>
-      </div>
-    );
+    return <Spinner global />;
   }
 
   if (user) {
@@ -69,30 +58,36 @@ const PublicRoute = ({ children }) => {
 const App = () => {
   return (
     <Router>
-      <Routes>
-        {/* Public routes — redirect if already authenticated */}
-        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+      <div className="flex flex-col min-h-screen bg-slate-900">
+        <div className="flex-1">
+          <Routes>
+            {/* Public routes — redirect if already authenticated */}
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
-        {/* Public provider profile — accessible without login */}
-        <Route path="/provider/:userId" element={<ProviderProfile />} />
+            {/* Public provider profile — accessible without login */}
+            <Route path="/provider/:userId" element={<ProviderProfile />} />
 
-        {/* Customer home and bookings — accessible to all authenticated users for browsing services */}
-        <Route path="/" element={<PrivateRoute roles={['customer', 'provider', 'admin']}><Home /></PrivateRoute>} />
-        <Route path="/bookings" element={<PrivateRoute roles={['customer']}><BookingHistory /></PrivateRoute>} />
-        <Route path="/book/:providerId" element={<PrivateRoute roles={['customer']}><BookService /></PrivateRoute>} />
-        <Route path="/review/:bookingId" element={<PrivateRoute roles={['customer']}><WriteReview /></PrivateRoute>} />
+            {/* Customer home and bookings — accessible to all authenticated users for browsing services */}
+            <Route path="/" element={<PrivateRoute roles={['customer', 'provider', 'admin']}><Home /></PrivateRoute>} />
+            <Route path="/bookings" element={<PrivateRoute roles={['customer']}><BookingHistory /></PrivateRoute>} />
+            <Route path="/book/:providerId" element={<PrivateRoute roles={['customer']}><BookService /></PrivateRoute>} />
+            <Route path="/review/:bookingId" element={<PrivateRoute roles={['customer']}><WriteReview /></PrivateRoute>} />
 
-        {/* Provider routes */}
-        <Route path="/provider/dashboard" element={<PrivateRoute roles={['provider']}><ProviderDashboard /></PrivateRoute>} />
-        <Route path="/provider/availability" element={<PrivateRoute roles={['provider']}><ProviderAvailability /></PrivateRoute>} />
+            {/* Provider routes */}
+            <Route path="/provider/dashboard" element={<PrivateRoute roles={['provider']}><ProviderDashboard /></PrivateRoute>} />
+            <Route path="/provider/availability" element={<PrivateRoute roles={['provider']}><ProviderAvailability /></PrivateRoute>} />
+            <Route path="/provider/earnings" element={<PrivateRoute roles={['provider']}><ProviderEarnings /></PrivateRoute>} />
 
-        {/* Admin routes */}
-        <Route path="/admin/dashboard" element={<PrivateRoute roles={['admin']}><AdminDashboard /></PrivateRoute>} />
+            {/* Admin routes */}
+            <Route path="/admin/dashboard" element={<PrivateRoute roles={['admin']}><AdminDashboard /></PrivateRoute>} />
 
-        {/* Catch-all redirect */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+            {/* Catch-all 404 Page */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+        <Footer />
+      </div>
     </Router>
   );
 };

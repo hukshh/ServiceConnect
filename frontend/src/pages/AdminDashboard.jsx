@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import API from '../utils/axios';
 import Navbar from '../components/Navbar';
+import Spinner from '../components/Spinner';
+
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const TABS = ['Overview', 'Users', 'Providers', 'Bookings', 'Promos'];
 
@@ -10,6 +13,7 @@ const AdminDashboard = () => {
   
   // Data States
   const [stats, setStats] = useState(null);
+  const [monthlyStats, setMonthlyStats] = useState([]);
   const [users, setUsers] = useState([]);
   const [providers, setProviders] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -21,16 +25,24 @@ const AdminDashboard = () => {
   });
   const [promoCreating, setPromoCreating] = useState(false);
 
+  const [errorMsg, setErrorMsg] = useState('');
+
   useEffect(() => {
+    document.title = "ServiceConnect - Admin Portal";
     fetchTabData(activeTab);
   }, [activeTab]);
 
   const fetchTabData = async (tab) => {
     setLoading(true);
+    setErrorMsg('');
     try {
       if (tab === 'Overview') {
-        const { data } = await API.get('/admin/stats');
-        setStats(data);
+        const [statsRes, monthlyRes] = await Promise.all([
+           API.get('/admin/stats'),
+           API.get('/admin/monthly-stats')
+        ]);
+        setStats(statsRes.data);
+        setMonthlyStats(monthlyRes.data);
       } else if (tab === 'Users') {
         const { data } = await API.get('/admin/users');
         setUsers(data);
@@ -45,7 +57,8 @@ const AdminDashboard = () => {
         setPromos(data);
       }
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to fetch data');
+      console.error("Dashboard fetch error:", error);
+      setErrorMsg(error.response?.data?.message || error.message || 'Failed to fetch data');
     } finally {
       setLoading(false);
     }
@@ -134,7 +147,16 @@ const AdminDashboard = () => {
 
         {/* Loading State Overlay conceptually mapped to content area */}
         {loading ? (
-           <div className="flex items-center justify-center h-64 text-slate-400">Loading data...</div>
+           <Spinner />
+        ) : errorMsg ? (
+           <div className="flex flex-col items-center justify-center py-20 text-center">
+             <span className="text-5xl mb-4">⚠️</span>
+             <h3 className="text-lg font-semibold text-white mb-2">Something went wrong</h3>
+             <p className="text-slate-400 text-sm mb-6">{errorMsg}</p>
+             <button onClick={() => fetchTabData(activeTab)} className="px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-medium rounded-xl transition-all duration-200">
+               Retry API Request
+             </button>
+           </div>
         ) : (
            <div className="space-y-6">
              
@@ -160,17 +182,86 @@ const AdminDashboard = () => {
                    </div>
                  </div>
                  
-                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mt-6">
-                   <h3 className="text-lg font-bold text-white mb-4">Bookings by Status</h3>
-                   <div className="flex flex-wrap gap-4">
-                     {stats.bookingsByStatus.map(b => (
-                        <div key={b._id} className="px-4 py-2 bg-black/30 border border-white/5 rounded-xl flex items-center gap-3">
-                           <span className="text-slate-300 font-medium capitalize">{b._id.replace('_', ' ')}</span>
-                           <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white">{b.count}</span>
-                        </div>
-                     ))}
-                     {stats.bookingsByStatus.length === 0 && <span className="text-slate-500 text-sm">No bookings found</span>}
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                   {/* Revenue Line Chart */}
+                   <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                     <h3 className="text-lg font-bold text-white mb-4">Revenue Trend (Last 6 Months)</h3>
+                     <div className="h-[300px] w-full">
+                       <ResponsiveContainer width="100%" height="100%">
+                         <LineChart data={monthlyStats} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                           <Line type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, fill: '#8b5cf6' }} />
+                           <CartesianGrid stroke="#ffffff1a" strokeDasharray="3 3" vertical={false} />
+                           <XAxis dataKey="month" stroke="#94a3b8" />
+                           <YAxis stroke="#94a3b8" tickFormatter={(value) => `₹${value}`} />
+                           <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#fff' }} itemStyle={{ color: '#8b5cf6' }} />
+                         </LineChart>
+                       </ResponsiveContainer>
+                     </div>
                    </div>
+
+                   {/* Bookings Bar Chart */}
+                   <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                     <h3 className="text-lg font-bold text-white mb-4">Bookings by Status</h3>
+                     <div className="h-[300px] w-full">
+                       <ResponsiveContainer width="100%" height="100%">
+                         <BarChart data={stats.bookingsByStatus} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                           <CartesianGrid stroke="#ffffff1a" strokeDasharray="3 3" vertical={false} />
+                           <XAxis dataKey="_id" stroke="#94a3b8" tickFormatter={(val) => val.replace('_', ' ')} />
+                           <YAxis stroke="#94a3b8" />
+                           <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#fff' }} itemStyle={{ color: '#38bdf8' }} cursor={{fill: '#ffffff0a'}} />
+                           <Bar dataKey="count" fill="#38bdf8" radius={[4, 4, 0, 0]} />
+                         </BarChart>
+                       </ResponsiveContainer>
+                     </div>
+                   </div>
+                 </div>
+
+                 {/* Leaderboard */}
+                 <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden mt-6">
+                    <div className="p-6 border-b border-white/10 flex justify-between items-center">
+                       <h3 className="text-lg font-bold text-white">Top Providers Leaderboard</h3>
+                       {stats.mostBookedCategory && (
+                          <div className="bg-brand-500/10 text-brand-400 px-3 py-1.5 rounded-lg text-xs font-bold border border-brand-500/20">
+                             🔥 Hot Category: {stats.mostBookedCategory.categoryDetails.name}
+                          </div>
+                       )}
+                    </div>
+                    <div className="overflow-x-auto">
+                       <table className="w-full text-left text-sm whitespace-nowrap">
+                         <thead className="bg-black/20 text-slate-400">
+                           <tr>
+                             <th className="px-6 py-4 font-semibold">Rank</th>
+                             <th className="px-6 py-4 font-semibold">Provider</th>
+                             <th className="px-6 py-4 font-semibold">Rating</th>
+                             <th className="px-6 py-4 font-semibold">Total Earnings</th>
+                           </tr>
+                         </thead>
+                         <tbody className="divide-y divide-white/5 text-slate-300">
+                           {stats.topProviders?.map((provider, idx) => (
+                              <tr key={provider._id} className="hover:bg-white/[0.02]">
+                                 <td className="px-6 py-4">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black ${idx === 0 ? 'bg-yellow-500/20 text-yellow-500' : idx === 1 ? 'bg-slate-300/20 text-slate-300' : idx === 2 ? 'bg-amber-700/20 text-amber-600' : 'bg-white/5 text-slate-500'}`}>
+                                       #{idx + 1}
+                                    </div>
+                                 </td>
+                                 <td className="px-6 py-4 font-bold text-white flex items-center gap-3">
+                                    {provider.user?.profilePhoto ? (
+                                       <img src={provider.user.profilePhoto} className="w-8 h-8 rounded-full object-cover" />
+                                    ) : (
+                                       <div className="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold text-xs">{provider.user?.name?.charAt(0)}</div>
+                                    )}
+                                    {provider.user?.name}
+                                 </td>
+                                 <td className="px-6 py-4 font-medium text-amber-400">★ {provider.rating}</td>
+                                 <td className="px-6 py-4 font-black text-emerald-400">₹{provider.totalEarnings}</td>
+                              </tr>
+                           ))}
+                           {(!stats.topProviders || stats.topProviders.length === 0) && (
+                              <tr><td colSpan="4" className="px-6 py-8 text-center text-slate-500">No provider data available</td></tr>
+                           )}
+                         </tbody>
+                       </table>
+                    </div>
                  </div>
                </>
              )}

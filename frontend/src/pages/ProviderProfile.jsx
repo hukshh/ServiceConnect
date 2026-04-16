@@ -33,6 +33,7 @@ const ProviderProfile = () => {
 
   // Fetches the provider's profile, services, and reviews on mount
   useEffect(() => {
+    document.title = `ServiceConnect - Provider Profile`;
     const fetchProviderData = async () => {
       try {
         const [profileRes, reviewsRes] = await Promise.all([
@@ -42,6 +43,9 @@ const ProviderProfile = () => {
         setProfile(profileRes.data.profile);
         setServices(profileRes.data.services);
         setReviews(reviewsRes.data);
+        if(profileRes.data.profile.user) {
+           document.title = `ServiceConnect - ${profileRes.data.profile.user.name}'s Profile`;
+        }
       } catch (err) {
         setError(err.response?.data?.message || 'Provider not found');
       } finally {
@@ -53,9 +57,9 @@ const ProviderProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
         <Navbar />
-        <div className="max-w-4xl mx-auto px-4 py-12 animate-pulse space-y-6">
+        <div className="max-w-4xl mx-auto px-4 py-12 animate-pulse space-y-6 w-full">
           <div className="flex gap-6 items-center">
             <div className="w-24 h-24 rounded-full bg-white/10 flex-shrink-0" />
             <div className="space-y-3 flex-1">
@@ -92,10 +96,15 @@ const ProviderProfile = () => {
   const { user, bio, experience, location, availability, rating, numReviews, isVerified } = profile;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
       <Navbar />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 space-y-8 animate-fade-in">
+      <div className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-12 space-y-8 animate-fade-in relative flex-1">
+        
+        <button onClick={() => navigate(-1)} className="absolute -top-4 left-4 sm:left-6 flex items-center gap-1 text-slate-400 hover:text-white transition-colors text-sm font-medium">
+           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+           Back
+        </button>
 
         {/* Profile Header */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-center sm:items-start">

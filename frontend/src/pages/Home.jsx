@@ -52,6 +52,7 @@ const Home = () => {
 
   // Fetches categories once on mount for the category chip bar and filter panel
   useEffect(() => {
+    document.title = "ServiceConnect - Find Local Professionals";
     const fetchCategories = async () => {
       try {
         const { data } = await API.get('/categories');

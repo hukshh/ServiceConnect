@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import API from '../utils/axios';
 import Navbar from '../components/Navbar';
 import StarRating from '../components/StarRating';
+import Spinner from '../components/Spinner';
 
 const WriteReview = () => {
   const { bookingId } = useParams();
@@ -17,6 +18,7 @@ const WriteReview = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    document.title = 'ServiceConnect - Write Review';
     const fetchBooking = async () => {
       try {
         const { data } = await API.get(`/bookings/${bookingId}`);
@@ -62,7 +64,7 @@ const WriteReview = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pb-20">
         <Navbar />
-        <div className="max-w-2xl mx-auto px-4 py-12 text-center text-slate-400">Loading...</div>
+        <Spinner />
       </div>
     );
   }

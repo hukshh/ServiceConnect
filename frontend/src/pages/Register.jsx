@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import API from '../utils/axios';
@@ -16,6 +16,10 @@ const Register = () => {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = 'ServiceConnect - Register';
+  }, []);
 
   // Updates form state when any input field changes
   const handleChange = (e) => {

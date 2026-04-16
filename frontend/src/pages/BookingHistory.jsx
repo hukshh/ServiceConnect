@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import API from '../utils/axios';
 import Navbar from '../components/Navbar';
 import BookingCard from '../components/BookingCard';
+import Spinner from '../components/Spinner';
 
 const TABS = ['All', 'Pending', 'Accepted', 'In Progress', 'Completed', 'Cancelled'];
 
@@ -12,6 +13,7 @@ const BookingHistory = () => {
   const [activeTab, setActiveTab] = useState('All');
 
   useEffect(() => {
+    document.title = "ServiceConnect - My Bookings";
     fetchBookings();
   }, []);
 
@@ -74,11 +76,7 @@ const BookingHistory = () => {
 
         {/* Content */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-pulse">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white/5 h-[300px] rounded-2xl"></div>
-            ))}
-          </div>
+          <Spinner />
         ) : error ? (
           <div className="text-center py-20 text-red-400">{error}</div>
         ) : filteredBookings.length === 0 ? (

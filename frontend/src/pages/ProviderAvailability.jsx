@@ -17,6 +17,7 @@ const ProviderAvailability = () => {
   const [blockDateInput, setBlockDateInput] = useState('');
 
   useEffect(() => {
+    document.title = "ServiceConnect - Availability Settings";
     fetchProfile();
   }, []);
 

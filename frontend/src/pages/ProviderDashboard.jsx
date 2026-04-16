@@ -14,6 +14,7 @@ const ProviderDashboard = () => {
   const [activeTab, setActiveTab] = useState('Pending');
 
   useEffect(() => {
+    document.title = "ServiceConnect - Provider Dashboard";
     fetchDashboardData();
   }, []);
 

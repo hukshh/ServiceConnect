@@ -101,6 +101,35 @@ const createService = async (req, res) => {
   }
 };
 
+// @desc    Create multiple services at once
+// @route   POST /api/services/bulk
+// @access  Provider
+const createMultipleServices = async (req, res) => {
+  try {
+    const { services } = req.body;
+    
+    if (!services || !Array.isArray(services) || services.length === 0) {
+      return res.status(400).json({ message: 'Please provide an array of services' });
+    }
+
+    const servicesToCreate = services.map(s => {
+      if (!s.title || !s.description || !s.category || s.price === undefined) {
+        throw new Error('All services must have title, description, category, and price');
+      }
+      return {
+        ...s,
+        priceType: s.priceType || 'fixed',
+        provider: req.user._id
+      };
+    });
+
+    const createdServices = await Service.insertMany(servicesToCreate);
+    res.status(201).json(createdServices);
+  } catch (error) {
+    res.status(400).json({ message: error.message || 'Failed to create services' });
+  }
+};
+
 // @desc    Update a service — only the owning provider can update
 // @route   PUT /api/services/:id
 // @access  Provider
@@ -172,6 +201,7 @@ module.exports = {
   getServices,
   getServiceById,
   createService,
+  createMultipleServices,
   updateService,
   deleteService,
   getMyServices,

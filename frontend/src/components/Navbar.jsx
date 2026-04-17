@@ -14,18 +14,18 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/10 bg-slate-900/80 backdrop-blur-xl">
+    <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:shadow-brand-500/40 transition-all duration-200">
+            <div className="w-9 h-9 rounded-xl bg-black flex items-center justify-center shadow-md transition-all duration-200">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <span className="text-xl font-bold text-white tracking-tight">
-              Service<span className="text-brand-400">Connect</span>
+            <span className="text-xl font-bold text-black tracking-tight">
+              Service<span className="text-gray-500">Connect</span>
             </span>
           </Link>
 
@@ -37,10 +37,10 @@ const Navbar = () => {
                 {user.role === 'customer' && (
                   <NavLink
                     to="/bookings"
-                    className={({ isActive }) => `hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors duration-200 ${isActive ? 'text-brand-400 bg-brand-500/10 rounded-xl' : 'text-slate-300 hover:text-white'}`}
+                    className={({ isActive }) => `hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-bold transition-colors duration-200 ${isActive ? 'text-black bg-gray-100 rounded-xl' : 'text-gray-500 hover:text-black'}`}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     My Bookings
                   </NavLink>
@@ -83,11 +83,11 @@ const Navbar = () => {
                 <NotificationBell />
 
                 {/* User avatar + name */}
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 border border-gray-200">
+                  <div className="w-7 h-7 rounded-full bg-black flex items-center justify-center text-white text-xs font-bold">
                     {user.name?.charAt(0).toUpperCase()}
                   </div>
-                  <span className="hidden sm:block text-sm font-medium text-white max-w-[120px] truncate">
+                  <span className="hidden sm:block text-sm font-bold text-black max-w-[120px] truncate">
                     {user.name}
                   </span>
                 </div>
@@ -95,10 +95,10 @@ const Navbar = () => {
                 {/* Logout button */}
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-400 hover:text-red-400 bg-white/5 hover:bg-red-500/10 border border-white/10 hover:border-red-500/20 rounded-xl transition-all duration-200"
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-gray-500 hover:text-white bg-gray-50 hover:bg-black border border-gray-200 hover:border-black rounded-xl transition-all duration-200"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
                   <span className="hidden sm:block">Logout</span>
                 </button>
@@ -107,13 +107,13 @@ const Navbar = () => {
               <>
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200"
+                  className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-black transition-colors duration-200"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 rounded-xl transition-all duration-200 shadow-lg shadow-brand-500/25"
+                  className="px-4 py-2 text-sm font-bold text-white bg-black hover:bg-gray-800 rounded-xl transition-all duration-200 shadow-sm"
                 >
                   Get Started
                 </Link>

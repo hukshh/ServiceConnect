@@ -46,26 +46,26 @@ const BookingHistory = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20">
       <Navbar />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 animate-fade-in">
         <div className="mb-10">
-          <h1 className="text-3xl font-extrabold text-white mb-2">My Bookings</h1>
-          <p className="text-slate-400">View and manage all your service requests.</p>
+          <h1 className="text-3xl font-extrabold text-black mb-2">My Bookings</h1>
+          <p className="text-gray-500 font-medium">View and manage all your service requests.</p>
         </div>
 
         {/* Custom Tabs */}
-        <div className="flex overflow-x-auto scrollbar-hide border-b border-white/10 mb-8 pb-px">
+        <div className="flex overflow-x-auto scrollbar-hide border-b border-gray-200 mb-8 pb-px">
           <div className="flex gap-6 min-w-max">
             {TABS.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`pb-4 text-sm font-medium transition-all duration-200 border-b-2 relative -mb-[2px] ${
+                className={`pb-4 text-sm font-bold transition-all duration-200 border-b-2 relative -mb-[2px] ${
                   activeTab === tab
-                    ? 'text-brand-400 border-brand-400'
-                    : 'text-slate-400 border-transparent hover:text-slate-200'
+                    ? 'text-black border-black'
+                    : 'text-gray-500 border-transparent hover:text-black'
                 }`}
               >
                 {tab}
@@ -78,12 +78,12 @@ const BookingHistory = () => {
         {loading ? (
           <Spinner />
         ) : error ? (
-          <div className="text-center py-20 text-red-400">{error}</div>
+          <div className="text-center py-20 text-red-600 font-medium">{error}</div>
         ) : filteredBookings.length === 0 ? (
-          <div className="text-center py-20 bg-white/5 border border-white/10 rounded-2xl">
-            <span className="text-4xl mb-4 block">📅</span>
-            <h3 className="text-lg font-medium text-white mb-1">No {activeTab.toLowerCase()} bookings found</h3>
-            <p className="text-slate-400 text-sm">When you book services, they will appear here.</p>
+          <div className="text-center py-20 bg-white border border-gray-200 rounded-2xl shadow-sm">
+            <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            <h3 className="text-lg font-bold text-black mb-1">No {activeTab.toLowerCase()} bookings found</h3>
+            <p className="text-gray-500 text-sm font-medium">When you book services, they will appear here.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

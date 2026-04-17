@@ -12,6 +12,7 @@ import WriteReview from './pages/WriteReview';
 import AdminDashboard from './pages/AdminDashboard';
 import ProviderAvailability from './pages/ProviderAvailability';
 import ProviderEarnings from './pages/ProviderEarnings';
+import ProviderServices from './pages/ProviderServices';
 import NotFound from './pages/NotFound';
 import Spinner from './components/Spinner';
 import Footer from './components/Footer';
@@ -58,7 +59,7 @@ const PublicRoute = ({ children }) => {
 const App = () => {
   return (
     <Router>
-      <div className="flex flex-col min-h-screen bg-slate-900">
+      <div className="flex flex-col min-h-screen bg-white text-black">
         <div className="flex-1">
           <Routes>
             {/* Public routes — redirect if already authenticated */}
@@ -78,6 +79,7 @@ const App = () => {
             <Route path="/provider/dashboard" element={<PrivateRoute roles={['provider']}><ProviderDashboard /></PrivateRoute>} />
             <Route path="/provider/availability" element={<PrivateRoute roles={['provider']}><ProviderAvailability /></PrivateRoute>} />
             <Route path="/provider/earnings" element={<PrivateRoute roles={['provider']}><ProviderEarnings /></PrivateRoute>} />
+            <Route path="/provider/services" element={<PrivateRoute roles={['provider']}><ProviderServices /></PrivateRoute>} />
 
             {/* Admin routes */}
             <Route path="/admin/dashboard" element={<PrivateRoute roles={['admin']}><AdminDashboard /></PrivateRoute>} />

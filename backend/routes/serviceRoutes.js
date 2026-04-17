@@ -4,6 +4,7 @@ const {
   getServices,
   getServiceById,
   createService,
+  createMultipleServices,
   updateService,
   deleteService,
   getMyServices,
@@ -16,6 +17,7 @@ router.get('/:id', getServiceById);
 
 // Provider-only routes — must come before /:id to avoid route conflict
 router.get('/my/listings', protect, authorize('provider'), getMyServices);
+router.post('/bulk', protect, authorize('provider'), createMultipleServices);
 router.post('/', protect, authorize('provider'), createService);
 router.put('/:id', protect, authorize('provider'), updateService);
 router.delete('/:id', protect, authorize('provider'), deleteService);

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Creates a pre-configured axios instance with base URL and auth token interceptor
 const API = axios.create({
-  baseURL: 'http://localhost:5001/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001/api',
 });
 
 // Request interceptor that attaches JWT token from localStorage to every outgoing request

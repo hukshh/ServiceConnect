@@ -159,9 +159,19 @@ const ProviderProfile = () => {
             {bio && <p className="text-gray-600 font-medium text-sm leading-relaxed max-w-xl">{bio}</p>}
           </div>
 
-          {/* Book Button */}
+          {/* Book Button - Hidden for non-customers to prevent 403 errors */}
           <button
-            onClick={() => navigate(`/book/${userId}`)}
+            onClick={() => {
+              const storedUser = localStorage.getItem('user');
+              const user = storedUser ? JSON.parse(storedUser) : null;
+              if (!user) {
+                navigate('/login');
+              } else if (user.role === 'customer') {
+                navigate(`/book/${userId}`);
+              } else {
+                alert('Only customers can book services.');
+              }
+            }}
             className="flex-shrink-0 px-6 py-3 bg-black hover:bg-gray-800 text-white font-bold rounded-xl transition-all duration-200 shadow-md hover:-translate-y-0.5"
           >
             Book this Provider

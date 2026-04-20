@@ -19,7 +19,7 @@ const ProviderEarnings = () => {
   const fetchEarningsData = async () => {
     try {
       // Fetch provider profile for total earnings
-      const profileRes = await API.get('/providers/me');
+      const profileRes = await API.get('/providers/profile/me');
       setProfile(profileRes.data);
 
       // Fetch provider bookings

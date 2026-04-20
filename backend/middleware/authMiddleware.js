@@ -45,6 +45,7 @@ const protect = async (req, res, next) => {
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
+      console.log(`[AUTH] 403 Forbidden: User ${req.user._id} with role '${req.user.role}' tried to access route ${req.originalUrl} requiring one of: ${roles.join(', ')}`);
       return res.status(403).json({
         message: `Role '${req.user.role}' is not authorized to access this route`,
       });

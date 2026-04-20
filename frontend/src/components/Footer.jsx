@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Footer = () => {
+  const { user } = useAuth();
+
   return (
     <footer className="bg-white border-t border-gray-200 py-8 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -15,7 +18,9 @@ const Footer = () => {
 
         <div className="flex gap-4">
            <Link to="/" className="text-gray-600 hover:text-black font-bold transition-colors">Home</Link>
-           <Link to="/bookings" className="text-gray-600 hover:text-black font-bold transition-colors">Bookings</Link>
+           {user?.role === 'customer' && (
+             <Link to="/bookings" className="text-gray-600 hover:text-black font-bold transition-colors">Bookings</Link>
+           )}
         </div>
       </div>
     </footer>

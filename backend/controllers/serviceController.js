@@ -74,20 +74,23 @@ const getServiceById = async (req, res) => {
   }
 };
 
-// @desc    Create a new service (provider only)
-// @route   POST /api/services
-// @access  Provider
 const createService = async (req, res) => {
   try {
-    const { title, description, category, price, priceType } = req.body;
+    const { title, description, category, price, priceType, customCategory } = req.body;
 
     if (!title || !description || !category || price === undefined) {
       return res.status(400).json({ message: 'Please provide title, description, category, and price' });
     }
 
+    // Append custom category suggestion if provided (e.g. for "Other" category)
+    let finalDescription = description;
+    if (customCategory) {
+      finalDescription += `\n\n(Suggested Category/Service: ${customCategory})`;
+    }
+
     const service = await Service.create({
       title,
-      description,
+      description: finalDescription,
       category,
       price,
       priceType: priceType || 'fixed',
@@ -116,8 +119,18 @@ const createMultipleServices = async (req, res) => {
       if (!s.title || !s.description || !s.category || s.price === undefined) {
         throw new Error('All services must have title, description, category, and price');
       }
+
+      // Handle custom category mention
+      let desc = s.description;
+      if (s.customCategory) {
+        desc += `\n\n(Suggested Category/Service: ${s.customCategory})`;
+      }
+
       return {
-        ...s,
+        title: s.title,
+        description: desc,
+        category: s.category,
+        price: s.price,
         priceType: s.priceType || 'fixed',
         provider: req.user._id
       };

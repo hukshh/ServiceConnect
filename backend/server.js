@@ -16,11 +16,23 @@ const { Server } = require('socket.io');
 const app = express();
 const httpServer = createServer(app);
 
+// Log incoming requests - VERY TOP
+app.use((req, res, next) => {
+  console.log(`[REQUEST] ${req.method} ${req.url}`);
+  next();
+});
+
 // Parse incoming JSON request bodies
 app.use(express.json());
 
 // Enable CORS for all origins (frontend dev server)
 app.use(cors());
+
+// Log incoming requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
 
 // Configure Socket.io
 const io = new Server(httpServer, {

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Landing from './pages/Landing';
 import Home from './pages/Home';
 import ProviderProfile from './pages/ProviderProfile';
 
@@ -32,7 +33,7 @@ const PrivateRoute = ({ children, roles }) => {
   if (roles && !roles.includes(user.role)) {
     if (user.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
     if (user.role === 'provider') return <Navigate to="/provider/dashboard" replace />;
-    return <Navigate to="/" replace />;
+    return <Navigate to="/services" replace />;
   }
 
   return children;
@@ -49,7 +50,7 @@ const PublicRoute = ({ children }) => {
   if (user) {
     if (user.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
     if (user.role === 'provider') return <Navigate to="/provider/dashboard" replace />;
-    return <Navigate to="/" replace />;
+    return <Navigate to="/services" replace />;
   }
 
   return children;
@@ -62,6 +63,9 @@ const App = () => {
       <div className="flex flex-col min-h-screen bg-white text-black">
         <div className="flex-1">
           <Routes>
+            {/* Public Landing Page */}
+            <Route path="/" element={<Landing />} />
+
             {/* Public routes — redirect if already authenticated */}
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
@@ -70,7 +74,7 @@ const App = () => {
             <Route path="/provider/:userId" element={<ProviderProfile />} />
 
             {/* Customer home and bookings — accessible to all authenticated users for browsing services */}
-            <Route path="/" element={<PrivateRoute roles={['customer', 'provider', 'admin']}><Home /></PrivateRoute>} />
+            <Route path="/services" element={<PrivateRoute roles={['customer', 'provider', 'admin']}><Home /></PrivateRoute>} />
             <Route path="/bookings" element={<PrivateRoute roles={['customer']}><BookingHistory /></PrivateRoute>} />
             <Route path="/book/:providerId" element={<PrivateRoute roles={['customer']}><BookService /></PrivateRoute>} />
             <Route path="/review/:bookingId" element={<PrivateRoute roles={['customer']}><WriteReview /></PrivateRoute>} />

@@ -22,7 +22,8 @@ const ProviderServices = () => {
     description: '',
     category: '',
     price: '',
-    priceType: 'fixed'
+    priceType: 'fixed',
+    customCategory: ''
   }]);
 
   useEffect(() => {
@@ -40,7 +41,8 @@ const ProviderServices = () => {
       setMyServices(servicesRes.data);
       setCategories(categoriesRes.data);
     } catch (err) {
-      setError('Failed to load data. Make sure you are verified.');
+      console.error('Error fetching provider services data:', err);
+      setError(err.response?.data?.message || 'Failed to load data. Make sure you are verified.');
     } finally {
       setLoading(false);
     }
@@ -53,7 +55,7 @@ const ProviderServices = () => {
   };
 
   const addServiceForm = () => {
-    setNewServices([...newServices, { title: '', description: '', category: '', price: '', priceType: 'fixed' }]);
+    setNewServices([...newServices, { title: '', description: '', category: '', price: '', priceType: 'fixed', customCategory: '' }]);
   };
 
   const removeServiceForm = (index) => {
@@ -80,7 +82,7 @@ const ProviderServices = () => {
       await API.post('/services/bulk', { services: newServices });
       setSuccess(`Successfully added ${newServices.length} service(s)!`);
       setIsAdding(false);
-      setNewServices([{ title: '', description: '', category: '', price: '', priceType: 'fixed' }]);
+      setNewServices([{ title: '', description: '', category: '', price: '', priceType: 'fixed', customCategory: '' }]);
       fetchData(); // Refresh the list
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create services.');
@@ -207,6 +209,25 @@ const ProviderServices = () => {
                       {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                     </select>
                   </div>
+                  
+                  {/* Conditional Input for Custom Category/Service mention */}
+                  {categories.find(c => c._id === service.category)?.name === 'Other' && (
+                    <div className="sm:col-span-2 animate-slide-up">
+                      <label className="block text-xs font-bold text-gray-500 mb-1 leading-tight">
+                        Mention the service/category you want to add
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Pet Grooming, Photography, etc." 
+                        value={service.customCategory} 
+                        onChange={(e) => handleCreateServiceChange(index, 'customCategory', e.target.value)} 
+                        className={`${inputClass} border-black ring-1 ring-black bg-gray-50`}
+                      />
+                      <p className="text-[10px] text-gray-400 mt-1 font-bold italic">
+                        * This will help us categorize your service properly.
+                      </p>
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-2">
                      <div>
                        <label className="block text-xs font-bold text-gray-500 mb-1">Price (₹)</label>

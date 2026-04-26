@@ -37,7 +37,7 @@ const FilterPanel = ({ categories, filters, onChange, onReset }) => {
             <option value="" className="bg-white text-black">All Categories</option>
             {categories.map((cat) => (
               <option key={cat._id} value={cat._id} className="bg-white text-black">
-                {cat.icon} {cat.name}
+                {cat.name}
               </option>
             ))}
           </select>
@@ -82,9 +82,9 @@ const FilterPanel = ({ categories, filters, onChange, onReset }) => {
             className={inputClass}
           >
             <option value="" className="bg-white text-black">Any Rating</option>
-            <option value="4" className="bg-white text-black">⭐ 4+ Stars</option>
-            <option value="3" className="bg-white text-black">⭐ 3+ Stars</option>
-            <option value="2" className="bg-white text-black">⭐ 2+ Stars</option>
+            <option value="4" className="bg-white text-black">4+ Stars</option>
+            <option value="3" className="bg-white text-black">3+ Stars</option>
+            <option value="2" className="bg-white text-black">2+ Stars</option>
           </select>
           <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -91,14 +91,14 @@ const Landing = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
              {[
-               { name: 'Electrician', icon: '⚡', color: 'bg-yellow-50 text-yellow-600' },
-               { name: 'Plumber', icon: '🔧', color: 'bg-blue-50 text-blue-600' },
-               { name: 'Cleaning', icon: '🧹', color: 'bg-purple-50 text-purple-600' },
-               { name: 'Tutoring', icon: '📚', color: 'bg-green-50 text-green-600' }
+               { name: 'Electrician', icon: '', color: 'bg-yellow-50 text-yellow-600' },
+               { name: 'Plumber', icon: '', color: 'bg-blue-50 text-blue-600' },
+               { name: 'Cleaning', icon: '', color: 'bg-purple-50 text-purple-600' },
+               { name: 'Tutoring', icon: '', color: 'bg-green-50 text-green-600' }
              ].map((cat, i) => (
                <div key={i} className="group p-8 rounded-3xl border border-gray-100 hover:border-black transition-all bg-white hover:shadow-2xl cursor-pointer">
-                  <div className={`w-16 h-16 ${cat.color} rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform`}>
-                    {cat.icon}
+                  <div className={`w-16 h-16 ${cat.color} rounded-2xl flex items-center justify-center text-2xl font-black mb-6 group-hover:scale-110 transition-transform uppercase`}>
+                    {cat.name.charAt(0)}
                   </div>
                   <h3 className="text-xl font-bold text-black mb-1">{cat.name}</h3>
                   <p className="text-sm text-gray-500 font-medium">Verified Experts</p>

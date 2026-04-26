@@ -28,7 +28,6 @@ const ServiceCard = ({ service }) => {
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center justify-between mb-3">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 border border-gray-200 rounded-full text-xs font-medium text-black">
-            <span>{category?.icon}</span>
             <span>{category?.name}</span>
           </span>
           {/* Price */}

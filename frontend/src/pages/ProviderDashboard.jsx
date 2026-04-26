@@ -4,7 +4,7 @@ import API from '../utils/axios';
 import Navbar from '../components/Navbar';
 import BookingCard from '../components/BookingCard';
 
-const TABS = ['All', 'Pending', 'Accepted', 'In Progress', 'Completed', 'Cancelled'];
+const TABS = ['All', 'Pending', 'Accepted', 'In Progress', 'Completed', 'Cancelled', 'Rejected'];
 
 const ProviderDashboard = () => {
   const [profile, setProfile] = useState(null);

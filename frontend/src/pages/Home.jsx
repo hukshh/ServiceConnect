@@ -157,7 +157,6 @@ const Home = () => {
                     : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 shadow-sm'
                 }`}
               >
-                <span className="text-lg">{cat.icon}</span>
                 <span>{cat.name}</span>
               </button>
             ))}

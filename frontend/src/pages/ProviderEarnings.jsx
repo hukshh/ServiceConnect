@@ -22,22 +22,22 @@ const ProviderEarnings = () => {
       const completed = bookingsRes.data.filter(b => b.status === 'completed');
       setBookings(completed);
 
-      // Group completed bookings by month for chart
-      const monthlyData = {};
+      // Group completed bookings by date for daily chart
+      const dailyData = {};
       completed.forEach(b => {
-         const date = new Date(b.createdAt);
-         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-         const monthName = date.toLocaleString('default', { month: 'short', year: '2-digit' });
+         const date = new Date(b.updatedAt);
+         const dateKey = date.toISOString().split('T')[0];
+         const dateName = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
          
-         if (!monthlyData[monthKey]) {
-            monthlyData[monthKey] = { sortKey: monthKey, month: monthName, earnings: 0 };
+         if (!dailyData[dateKey]) {
+            dailyData[dateKey] = { sortKey: dateKey, date: dateName, earnings: 0 };
          }
-         monthlyData[monthKey].earnings += b.totalAmount;
+         dailyData[dateKey].earnings += b.totalAmount;
       });
 
-      const formattedChart = Object.values(monthlyData)
+      const formattedChart = Object.values(dailyData)
          .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
-         .slice(-6);
+         .slice(-7); // Show last 7 active days
 
       setMonthlyChartData(formattedChart);
 
@@ -94,7 +94,7 @@ const ProviderEarnings = () => {
            <div className="bg-white border border-gray-100 rounded-3xl p-8 lg:col-span-2 shadow-sm">
               <div className="flex items-center justify-between mb-8">
                  <h3 className="text-xl font-black text-black uppercase tracking-tight">Revenue Trend</h3>
-                 <div className="px-3 py-1 bg-gray-50 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest border border-gray-100">Last 6 Months</div>
+                 <div className="px-3 py-1 bg-gray-50 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest border border-gray-100">Recent Activity</div>
               </div>
               {monthlyChartData.length > 0 ? (
                  <div className="h-[240px] w-full">
@@ -108,7 +108,7 @@ const ProviderEarnings = () => {
                        </defs>
                        <CartesianGrid stroke="#f1f1f1" strokeDasharray="4 4" vertical={false} />
                        <XAxis 
-                         dataKey="month" 
+                         dataKey="date" 
                          stroke="#a1a1a1" 
                          fontSize={10} 
                          axisLine={false}
